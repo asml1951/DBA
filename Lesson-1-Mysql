@@ -1,7 +1,7 @@
-create database php2;
-use php2;
+CREATE DATABASE php2;
+USE php2;
 
-create table php2.books
+CREATE TABLE php2.books
 (
 	id bigint unsigned auto_increment,
 	year year not null,
@@ -27,7 +27,7 @@ INSERT INTO books (year, author, price, title) VALUES
   ('1991','Достоевский','430.50','Игрок')
   ;
   
-create table php2.publishers
+CREATE TABLE php2.publishers
 (
 	id bigint unsigned auto_increment,
 	name varchar(200) not null,
