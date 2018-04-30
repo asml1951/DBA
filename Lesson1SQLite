@@ -1,0 +1,47 @@
+CREATE TABLE books
+(
+	id INTEGER
+		primary key,
+	year date,
+	author varchar(100),
+	price decimal(5,2),
+	title varchar(200)
+)
+;
+
+INSERT INTO books (year, author, price, title) VALUES
+  ('1993','Толстой','637.50','Анна Каренина'),
+  ('1995','Толстой','237.50','Воскресение'),
+  ('2001','Толстой','700.50','Плоды просвещения'),
+  ('1985','Толстой','122.50','Севастопольские рассказы'),
+  ('2003','Тургенев','450.50','Дым'),
+  ('1996','Тургенев','630.50','Вешние воды'),
+  ('1997','Достоевский','330.50','Идиот'),
+  ('1991','Достоевский','430.50','Игрок')
+  ;
+  
+  CREATE TABLE publishers
+(
+	id int
+		primary key,
+	name varchar(200),
+	city varchar(100)
+)
+;
+
+INSERT INTO publishers(name,city) VALUES
+  ('Глобус','Москва'),
+  ('Знание','Санкт-Петербург'),
+  ('Эксмо','Москва'),
+  ('Питер','Санкт-Петербург'),
+  ('Лениздат','Санкт-Петербург'),
+  ('МакГроу Хилл','Нью-Йорк');
+  
+  SELECT * FROM books WHERE author = 'Толстой';
+  SELECT * FROM books WHERE price <  500.00;
+  SELECT title,year FROM books WHERE author = 'Тургенев' ORDER BY year ASC ;
+  SELECT author FROM books WHERE year BETWEEN 1990 AND 2000;
+  
+
+
+
