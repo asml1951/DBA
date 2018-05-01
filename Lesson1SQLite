@@ -1,11 +1,10 @@
 CREATE TABLE books
 (
-	id INTEGER
-		primary key,
-	year date,
-	author varchar(100),
-	price decimal(5,2),
-	title varchar(200)
+	id INTEGER primary key,
+	year DATE,
+	author VARCHAR(100),
+	price DECIMAL(5,2),
+	title  VARCHAR(200)
 )
 ;
 
@@ -22,10 +21,9 @@ INSERT INTO books (year, author, price, title) VALUES
   
   CREATE TABLE publishers
 (
-	id int
-		primary key,
-	name varchar(200),
-	city varchar(100)
+	id INT	primary key,
+	name  VARCHAR(200),
+	city  VARCHAR(100)
 )
 ;
 
