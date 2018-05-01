@@ -6,9 +6,8 @@ CREATE TABLE php2.books
 	id SERIAL,
 	year  YEAR NOT NULL,
 	author VARCHAR(100) NULL,
-	price DECIMAL(6,2)NOT NULL,
-	title VARCHAR(200) NOT NULL,
-	
+	price DECIMAL(6,2) NOT NULL,
+	title VARCHAR(200) NOT NULL	
 );
 
 
@@ -28,7 +27,7 @@ CREATE TABLE php2.publishers
 (
 	id SERIAL,
 	name VARCHAR(200) NOT NULL,
-	city VARCHAR(100) NOT NULL,
+	city VARCHAR(100) NOT NULL
 	
 );
 
