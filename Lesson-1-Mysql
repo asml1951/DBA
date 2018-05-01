@@ -1,18 +1,18 @@
-CREATE DATABASE php2;
-USE php2;
+CREATE DATABASE `php2`;
+USE `php2`;
 
-CREATE TABLE php2.books
+CREATE TABLE `books`
 (
-	id SERIAL,
-	year  YEAR NOT NULL,
-	author VARCHAR(100) NULL,
-	price DECIMAL(6,2) NOT NULL,
-	title VARCHAR(200) NOT NULL	
+	`id` SERIAL,
+	`year`  YEAR NOT NULL,
+	`author` VARCHAR(100) NULL,
+	`price` DECIMAL(6,2) NOT NULL,
+	`title` VARCHAR(200) NOT NULL	
 );
 
 
 
-INSERT INTO books (year, author, price, title) VALUES
+INSERT INTO `books` (`year`, `author`, `price`, `title`) VALUES
   ('1993','Толстой','637.50','Анна Каренина'),
   ('1995','Толстой','237.50','Воскресение'),
   ('2001','Толстой','700.50','Плоды просвещения'),
@@ -23,17 +23,17 @@ INSERT INTO books (year, author, price, title) VALUES
   ('1991','Достоевский','430.50','Игрок');
   
   
-CREATE TABLE php2.publishers
+CREATE TABLE `publishers`
 (
-	id SERIAL,
-	name VARCHAR(200) NOT NULL,
-	city VARCHAR(100) NOT NULL
+	`id` SERIAL,
+	`name` VARCHAR(200) NOT NULL,
+	`city` VARCHAR(100) NOT NULL
 	
 );
 
 
   
- INSERT INTO publishers(name,city) VALUES
+ INSERT INTO `publishers`(name,city) VALUES
   ('Глобус','Москва'),
   ('Знание','Санкт-Петербург'),
   ('Эксмо','Москва'),
@@ -41,7 +41,7 @@ CREATE TABLE php2.publishers
   ('Лениздат','Санкт-Петербург'),
   ('МакГроу Хилл','Нью-Йорк');
   
-SELECT * FROM books WHERE author = 'Толстой';
+SELECT * FROM `books` WHERE `author` = 'Толстой';
 
 1	1991	Толстой	567.50	Война и мир
 2	1993	Толстой	637.50	Анна Каренина
@@ -49,7 +49,7 @@ SELECT * FROM books WHERE author = 'Толстой';
 4	2001	Толстой	700.50	Плоды просвещения
 5	1985	Толстой	122.50	Севастопольские рассказы
 
-SELECT * FROM books WHERE price <  500.00;
+SELECT * FROM `books` WHERE `price` <  500.00;
 
 3	1995	Толстой	    237.50	Воскресение
 5	1985	Толстой	    122.50	Севастопольские рассказы
@@ -57,12 +57,12 @@ SELECT * FROM books WHERE price <  500.00;
 8	1997	Достоевский	330.50	Идиот
 9	1991	Достоевский	430.50	Игрок
 
-SELECT title,year FROM books WHERE author = 'Тургенев' ORDER BY year ASC ;
+SELECT `title`,`year` FROM `books` WHERE `author` = 'Тургенев' ORDER BY year ASC ;
 
 Вешние воды	1996
 Дым	        2003
 
-SELECT author FROM books WHERE year BETWEEN 1990 AND 2000;
+SELECT `author` FROM `books` WHERE `year` BETWEEN 1990 AND 2000;
 
 Толстой
 Толстой
@@ -71,7 +71,7 @@ SELECT author FROM books WHERE year BETWEEN 1990 AND 2000;
 Достоевский
 Достоевский
 
-SELECT author,year FROM books WHERE year BETWEEN 1990 AND 2000;
+SELECT `author`,`year` FROM `books` WHERE `year` BETWEEN 1990 AND 2000;
 
 Толстой	    1991
 Толстой	    1993
