@@ -3,16 +3,13 @@ USE php2;
 
 CREATE TABLE php2.books
 (
-	id bigint unsigned auto_increment,
-	year year not null,
-	author varchar(100) null,
-	price decimal(6,2) not null,
-	title varchar(200) not null,
-	constraint id
-		unique (id)
-)
-engine=InnoDB
-;
+	id SERIAL,
+	year  YEAR NOT NULL,
+	author VARCHAR(100) NULL,
+	price DECIMAL(6,2)NOT NULL,
+	title VARCHAR(200) NOT NULL,
+	
+);
 
 
 
@@ -24,19 +21,16 @@ INSERT INTO books (year, author, price, title) VALUES
   ('2003','Тургенев','450.50','Дым'),
   ('1996','Тургенев','630.50','Вешние воды'),
   ('1997','Достоевский','330.50','Идиот'),
-  ('1991','Достоевский','430.50','Игрок')
-  ;
+  ('1991','Достоевский','430.50','Игрок');
+  
   
 CREATE TABLE php2.publishers
 (
-	id bigint unsigned auto_increment,
-	name varchar(200) not null,
-	city varchar(100) not null,
-	constraint id
-		unique (id)
-)
-engine=InnoDB
-;
+	id SERIAL,
+	name VARCHAR(200) NOT NULL,
+	city VARCHAR(100) NOT NULL,
+	
+);
 
 
   
