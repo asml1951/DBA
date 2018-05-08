@@ -1,0 +1,149 @@
+--MySQL
+
+CREATE DATABASE internetshop;
+
+USE internetshop;
+
+CRATE TABLE `goods`
+(
+	id bigint unsigned auto_increment,
+	name varchar(200) not null,
+	code int unsigned not null,
+	image varchar(200) null,
+	price decimal(10,2) unsigned not null,
+	sale_date date not null,
+	quantity int unsigned null,
+	note text null,
+	constraint id
+		unique (id)
+)
+comment 'Товары в интернет магазине' engine=InnoDB
+;
+
+INSERT INTO `goods` (`name`,`code`,`image`,`price`,`sale_date`,`quantity`,`note`) VALUES
+  ('Электрорубанок','1111','images/1.jpg','1500.00','2018-03-03','25','Китай'),
+  ('Дрель аккумуляторная','1112','images/2.jpg','1780.00','2018-04-04','38','Китай'),
+  ('Дрель ручная','1113','images/3.jpg','2058.00','2018-04-04','90','Германия'),
+  ('Угловая шлифовальная машина','1114','images/4.jpg','3400.00','2018-04-04','37','Германия'),
+  ('Дрель ударная','1115','images/5.jpg','2750.50','2018-05-04','24','Россия'),
+  ('Шуруповерт','1116','images/6.jpg','947.60','2018-06-04','29','Россия'),
+  ('Электропила','1117','images/7.jpg','3048.90','2018-07-04','21','Россия');
+
+--Вставляем отрицательную цену:
+ sql>INSERT INTO `goods` (`name`,`code`,`image`,`price`,`sale_date`,`quantity`,`note`) VALUES
+  ('Электрорубанок','1120','images/1.jpg','-1500.00','2018-03-03','25','Россия');
+
+  [2018-05-07 17:17:28] [22001][1264] Data truncation: Out of range value for column 'price' at row 1
+
+  --Вставляем отрицательное количество
+
+  sql> INSERT INTO `goods` (`name`,`code`,`image`,`price`,`sale_date`,`quantity`,`note`) VALUES
+  ('Электрорубанок','1120','images/1.jpg','1500.00','2018-03-03','-25','Россия');
+
+[2018-05-07 17:20:04] [01000][1264] Out of range value for column 'quantity' at row 1
+[2018-05-07 17:20:04] [22001][1264] Data truncation: Out of range value for column 'quantity' at row 1
+
+--Пустое поле "код товара"
+sql> INSERT INTO `goods` (`name`,`code`,`image`,`price`,`sale_date`,`quantity`,`note`) VALUES
+  ('Электрорубанок','','images/1.jpg','1500.00','2018-03-03','25','Россия')
+[2018-05-07 17:22:10] [HY000][1366] Incorrect integer value: '' for column 'code' at row 1
+[2018-05-07 17:22:10] [HY000][1366] Incorrect integer value: '' for column 'code' at row 1
+
+
+--PostgreSQL
+
+
+
+CREATE TABLE "goods"
+(
+"id" SERIAL,
+"name" VARCHAR(200) NOT NULL,
+"code" INT  NOT NULL CHECK("code" > 0),
+"image" VARCHAR(200) NULL,
+"price" DECIMAL(10,2)  NOT NULL CHECK("price" > 0),
+"sale_date" date not null,
+"quantity" INT  NULL CHECK("quantity" > 0),
+"note" TEXT NULL
+);
+
+--Вставка отрицательношо знаения code:
+sql> INSERT INTO "goods" ("name","code","image","price","sale_date","quantity","note") VALUES
+  ('Электрорубанок','-1111','images/1.jpg','1500.00','2018-03-03','25','Китай')
+[2018-05-08 10:29:24] [23514] ОШИБКА: новая строка в отношении "goods" нарушает ограничение-проверку "goods_code_check"
+[2018-05-08 10:29:24] Подробности: Ошибочная строка содержит (8, Электрорубанок, -1111, images/1.jpg, 1500.00, 2018-03-03, 25, Кита.....
+
+
+--Вставка большошго числа в поле price:
+sql> INSERT INTO "goods" ("name","code","image","price","sale_date","quantity","note") VALUES
+  ('Электрорубанок','2111','images/1.jpg','232389898989898989899676767.00','2018-03-03','25','Китай')
+[2018-05-08 10:33:01] [22003] ОШИБКА: переполнение поля numeric
+[2018-05-08 10:33:01] Подробности: Поле с точностью 10, порядком 2 должно округляться до абсолютного значения меньше чем 10^8.
+
+--Пустое поле code:
+sql> INSERT INTO "goods" ("name","code","image","price","sale_date","quantity","note") VALUES
+  ('Электрорубанок','','images/1.jpg','232389898989898989899676767.00','2018-03-03','25','Китай')
+[2018-05-08 10:36:27] [22P02] ОШИБКА: неверное значение для целого числа: ""
+[2018-05-08 10:36:27] Позиция: 111
+
+
+--SQLite
+
+sql> CREATE TABLE `goods`
+(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+name VARCHAR(200) NOT NULL,
+code INT  NOT NULL,
+image VARCHAR(200) NULL,
+price DECIMAL(10,2)  NOT NULL,
+sale_date DATE NOT NULL,
+quantity INTEGER  NULL,
+note TEXT NULL
+)
+[2018-05-08 11:16:05] completed in 291ms
+
+sql> INSERT INTO `goods` (`name`,`code`,`image`,`price`,`sale_date`,`quantity`,`note`) VALUES
+  ('Электрорубанок','1111','images/1.jpg','1500.00','2018-03-03','25','Китай'),
+  ('Дрель аккумуляторная','1112','images/2.jpg','1780.00','2018-04-04','38','Китай'),
+  ('Дрель ручная','1113','images/3.jpg','2058.00','2018-04-04','90','Германия'),
+  ('Угловая шлифовальная машина','1114','images/4.jpg','3400.00','2018-04-04','37','Германия'),
+  ('Дрель ударная','1115','images/5.jpg','2750.50','2018-05-04','24','Россия'),
+  ('Шуруповерт','1116','images/6.jpg','947.60','2018-06-04','29','Россия'),
+  ('Электропила','1117','images/7.jpg','3048.90','2018-07-04','21','Россия')
+[2018-05-08 11:17:32] 7 rows affected in 106ms
+
+--Вставка отрицательного значения code:
+
+sql> INSERT INTO `goods` (`name`,`code`,`image`,`price`,`sale_date`,`quantity`,`note`) VALUES
+  ('Электрорубанок','-1111','images/1.jpg','1500.00','2018-03-03','25','Китай')
+[2018-05-08 11:28:30] 1 row affected in 71ms    --Вполне успешно!
+
+--Вствака большого числа типа real  в quantity:
+
+sql> INSERT INTO `goods` (`name`,`code`,`image`,`price`,`sale_date`,`quantity`,`note`) VALUES
+  ('','1111','images/1.jpg','1500.00','2018-12-12','2.0e+60','Китай')
+[2018-05-08 13:36:33] 1 row affected in 74ms
+
+sql> select quantity from goods
+[2018-05-08 13:40:36] 12 rows retrieved starting from 1 in 102ms (execution: 11ms, fetching: 91ms)
+
+														   25
+													       38
+														   90
+														   37
+														   24
+														   29
+														   21
+														   25
+														   25
+														   25
+2000000000000000300000000000000000000000000000000000000000000
+
+
+
+
+
+
+
+
+
+
