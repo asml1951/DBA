@@ -1,0 +1,321 @@
+--Курс dBA. Урок 3
+
+
+--MySQL
+
+/****
+1.Создайте таблицу с товарами интернет-магазина. Обязательно должны быть следующие поля:
+
+Автоинкрементный номер (назовите это поле ID), который является первичным ключом записи
+Уникальный (это важно!) артикул товара
+Наименование товара
+Его цена
+Старая цена (NULL, если цена ранее не снижалась)
+Ссылка на изображение
+Дата поступления товара на склад
+Количество товара на складе  
+****/
+
+sql> CREATE TABLE `products`
+(
+  `id`        SERIAL PRIMARY KEY ,
+  `artikul`   INT UNIQUE   NOT NULL,
+  `name`      VARCHAR(200) NOT NULL,
+  `price`     INT          NOT NULL,      
+  `old_price` INT          NULL,
+  `image`     VARCHAR(200) NULL,
+  `quantity`  INT          NULL,
+  `date`      DATE         NULL
+)
+[2018-05-15 10:17:20] completed in 190ms
+
+/****** 
+2. Задание со "зведочкой". Придумайте и реализуйте способ БЫСТРО и легко заполнить БД как минимум 1000 различных товаров
+
+   Выполняем:
+   а) чтобы получить человеко-понятные названия товаров скачиваем из интеренета какой-нибудь прайс лист(в моем случае прайс-лист книжного издательства);
+   б) экспортируем в формат CSV данные столбцов артикул, наименование товара, цена (в рублях без копеек);
+   в) с помощью PHPStorm импортируем эти данные в таблицу tovar;
+   г) поля old_price заполняем случайным образом: 
+   ****/
+sql> UPDATE  `products` SET `old_price` = price*(1 + 0.2*RAND())
+[2018-05-15 10:25:56] 56475 rows affected in 967ms
+
+/**** д) поля date и quantity(дата поступления товара) заполняем случайным образом      *****/
+
+sql> UPDATE `products` SET date = DATE(FROM_UNIXTIME(RAND()*(UNIX_TIMESTAMP('2018-04-01')-UNIX_TIMESTAMP('2016-01-01')) + UNIX_TIMESTAMP('2016-01-01')))
+[2018-05-15 10:27:16] 56475 rows affected in 1s 335msUPDATE`products` SET date = DATE(FROM_UNIXTIME(RAND()*(UNIX_TIMESTAMP('2018-04-01')-UNIX_TIMESTAMP('2016-01-01')) + UNIX_TIMESTAMP('2016-01-01')))
+
+sql> UPDATE `products` SET `quantity` = 2000 * RAND()
+
+     ссылки на изображения товаров формируем в виде:   images/artikul.img
+
+sql> UPDATE `products` SET `image` = CONCAT('images/',`artikul`,'.img')
+[2018-05-17 14:39:06] 1100 rows affected in 250ms
+
+
+/* е) оставляем в таблице tovar 1100 строк  */
+
+sql> DELETE FROM `products` WHERE id > 1100
+[2018-05-15 10:31:07] 55375 rows affected in 476ms
+
+sql> SELECT COUNT(*) FROM `products`
+COUNT(*)
+1100
+
+/*
+3. Постройте запросы, которые:
+
+     а)Выбирают 10 самых новых товаров     */
+
+sql> SELECT `artikul`,`name`,`date` FROM `products` ORDER BY date DESC LIMIT 10
+[2018-05-15 10:45:40] 10 rows retrieved starting from 1 in 100ms (execution: 12ms, fetching: 88ms)
+
+4251830	3000 практических советов для дома	                                                                      2018-03-30
+7419990	111 историй о Ходже Насреддине: Читаем параллельно на турецком и русском языках. Билингва турецко-русский	2018-03-30
+7651580	30 Минут … для развития навыков общения	                                                                  2018-03-29
+6833670	27 верных способов получить то, что хочется. 7-е изд	                                                    2018-03-28
+8615410	97 этюдов для программистов. Опыт ведущих экспертов                                                      	2018-03-28
+8450690	60 шагов ремонта	                                                                                        2018-03-26
+6831260	200 народных пословиц и поговорок	                                                                        2018-03-26
+6806520	28 новейших способов лечения кожных заболеваний                                                           2018-03-26
+6457510	1+1, или Переверни книгу. Великолепные поздравления и тосты на все случаи жизни. Незабываемые сценари	    2018-03-23
+8198340	Depeche Mode: Обнаженные до костей	                                                                      2018-03-22
+
+
+/*  б) Выбирают 10 самых дешевых товаров    */
+
+sql> SELECT `artikul`,`name`,`price` FROM `products` ORDER BY price  LIMIT 10
+[2018-05-15 10:49:31] 10 rows retrieved starting from 1 in 36ms (execution: 14ms, fetching: 22ms)
+
+7005190	Comе i soldi andarono in gir il mondo.Una storia italiana	                                     0 /* цена меньше 1 рубля, но я копейки отбросил */
+6723090	60 моделей. Вяжем одежду для малышей*	                                                         1
+8187770	24 закона обольщения. Грин Р.	                                                                 1
+8460560	TEST "Прописи для детского сада" Печатные буквы (2406)	                                       6
+8459830	(Раскр) Раскраска для детского сада. Дикие звери (3241)	                                       10
+8461070	2624 Альбом для рис. с раскрас. "Пират.клад"  10 л, на гребне, блок 100 г/кв.м.	               20
+8461020	(Накл) "Раскраска с наклейками". Для мальчиков. Автомобили. Внедорожники. Toyota, Hyundai      21
+4157080	72 магических ключа к успеху и процветанию	                                                   23
+8459800	+ВЫРУБКА.СКАЗОЧНЫЙ ДОМИК.КОЗЛЯТА И ВОЛК	                                                       24
+8461680	+КУЛ.БЛЮДА ДЛЯ ПИКНИКА	 
+
+/*   в) Выбираем 10 товаров, цена на которых была максимально снижена (в абсолютном  смысле):      */
+
+sql> SELECT `artikul`,`name`,`old_price`,`price`, `old_price` - `price` AS `discount`
+FROM `products` ORDER BY `discount` DESC  LIMIT 10
+[2018-05-15 11:01:11] 10 rows retrieved starting from 1 in 34ms (execution: 14ms, fetching: 20ms)  
+
+artikul name                                                                      old_price  price    discount
+7827590	CRIME, PUNISHMENT, AND RESPONSIBILITY: THE JURISPRUDENCE OF ANTONY DUFF*	13470	    11422	    2048
+7586010	ENGLISH PLUS 2ED 1&2  DVD	                                                17966	    16033	    1933
+6867680	48 законов власти в коробе	                                              10530	    8901	    1629
+7663740	BUSINESS DATA ANALYSIS USING EXCEL PB                                   	8480	    7453	    1027
+7720060	BETWEEN SAYING & DOING HB                                                	7367	   6346	      1021
+3862360	CD. Готовые тренинги. Как построить персонал в ресторане. ( комплект: CD )	7745	   6852	    893
+5528470	CD. Информационные услуги, база данных "Строительство"(полная)	            5796	   4944	    852
+5850590	1001 виски. Самая полная в мире энциклопедия виски. Золот. Тиснен	        7051	   6210	      841
+7948300	C 6.0. Справочник. Полное описание языка. 6-е изд	                        4582	   3880	      702
+2866140	CD. Между ангелом и чертом: Как отрегулировать отношения с подчиненными 	4775	   4091	      684
+
+/*   г) Выбираем те товары, чье наименование начинается с символов "TEST" 
+(у меня тип artikul  int, поэтому работаем с name), используя оператор LIKE   */
+
+sql> SELECT `artikul`,`name` FROM `products` WHERE `name` LIKE 'TEST%'
+[2018-05-15 11:19:07] 4 rows retrieved starting from 1 in 34ms (execution: 26ms, fetching: 8ms)
+
+8650270	TEST "Комбинированная реорганизация коммерческих организаций: монография" автор Т. А. Нуждин
+7567040	TEST "Молекулярная физика в жизни, технике и природе: Учебное пособие
+8460560	TEST "Прописи для детского сада" Печатные буквы (2406)
+7023240	TEST Школьный словообразовательный словарь русского языка
+
+/*   д) Проведите анализ их исполнения (EXPLAIN). Добавьте индексы, которые считаете нужным. Снова проведите анализ.   */
+
+sql> EXPLAIN SELECT `artikul`,`name`,`date` FROM `products` ORDER BY date DESC LIMIT 10
+[2018-05-15 12:01:57] [HY000][1003] /* select#1 */ select `tovar`.`products`.`artikul` AS `artikul`,`tovar`.`products`.`name` AS `name`,`tovar`.`products`.`date` AS `date` from `tovar`.`products` order by `tovar`.`products`.`date` desc limit 10
+[2018-05-15 12:01:57] 1 row retrieved starting from 1 in 78ms (execution: 34ms, fetching: 44ms)
+
+id select_type table partitions type possible_keys key key_len ref rows filtered Extra
+1	SIMPLE	products		ALL					                   1100	100	    Using filesort    /* rows=1100 ; fetching = 44ms
+
+--Создаем индекс date_index
+
+sql> CREATE INDEX `date_index` on `products`(`date`)
+[2018-05-15 14:05:44] completed in 389ms
+
+sql> EXPLAIN SELECT `artikul`,`name`,`date` FROM `products` ORDER BY date DESC LIMIT 10
+[2018-05-15 14:07:17] [HY000][1003] /* select#1 */ select `tovar`.`products`.`artikul` AS `artikul`,`tovar`.`products`.`name` AS `name`,`tovar`.`products`.`date` AS `date` from `tovar`.`products` order by `tovar`.`products`.`date` desc limit 10
+[2018-05-15 14:07:17] 1 row retrieved starting from 1 in 42ms (execution: 14ms, fetching: 28ms)
+
+1	SIMPLE	products null	index		date_index	4		10	100	 null   /* rows=10 ; fetching: 28ms     */
+
+
+
+-- Поиск по записи name до создания индекса:
+
+sql> EXPLAIN SELECT `artikul`,`name`,`old_price`,`price`, `old_price` - `price` AS `discount`
+        FROM `products` ORDER BY `discount` DESC  LIMIT 10
+[2018-05-15 13:22:19] [HY000][1003] /* select#1 */ select `tovar`.`products`.`artikul` AS `artikul`,`tovar`.`products`.`name` AS `name`,`tovar`.`products`.`old_price` AS `old_price`,`tovar`.`products`.`price` AS `price`,(`tovar`.`products`.`old_price` - `tovar`.`products`.`price`) AS `discount` from `tovar`.`products` order by `discount` desc limit 10
+[2018-05-15 13:22:19] 1 row retrieved starting from 1 in 38ms (execution: 11ms, fetching: 27ms)
+
+1	SIMPLE	products		ALL					1100	100	Using filesort
+
+
+sql> EXPLAIN SELECT `artikul`, `name` FROM `products` WHERE `name` = 'DVD Живое слово отца Александра'
+[2018-05-15 13:43:31] [HY000][1003] /* select#1 */ select `tovar`.`products`.`artikul` AS `artikul`,`tovar`.`products`.`name` AS `name` from `tovar`.`products` where (`tovar`.`products`.`name` = 'DVD Живое слово отца Александра')
+[2018-05-15 13:43:31] 1 row retrieved starting from 1 in 32ms (execution: 11ms, fetching: 21ms)
+
+1	SIMPLE	products		ALL					1100	10	Using where            /* rows=110 ; fetching = 21 ms
+
+/* создаем индекс name_index    */
+
+sql> CREATE INDEX `name_index` on `products`(`name`)
+[2018-05-15 13:46:30] completed in 422ms
+
+sql> EXPLAIN SELECT `artikul`, `name` FROM `products` WHERE `name` = 'DVD Живое слово отца Александра'
+[2018-05-15 13:47:30] [HY000][1003] /* select#1 */ select `tovar`.`products`.`artikul` AS `artikul`,`tovar`.`products`.`name` AS `name` from `tovar`.`products` where (`tovar`.`products`.`name` = 'DVD Живое слово отца Александра')
+[2018-05-15 13:47:30] 1 row retrieved starting from 1 in 48ms (execution: 35ms, fetching: 13ms)
+
+1	SIMPLE	products null	ref	name_index	name_index	602	const	1	100	  null   /* rows = 1 ;  fetching = 13ms */
+
+
+
+--PostgreSQL
+
+
+sql> CREATE TABLE "products"
+(
+  "id"        SERIAL PRIMARY KEY ,
+  "artikul"   INT UNIQUE   NOT NULL,
+  "name"      VARCHAR(200) NOT NULL,
+  "price"     INT          NOT NULL,
+  "old_price" INT          NULL,
+  "image"     VARCHAR(200) NULL,
+  "quantity"  INT          NULL,
+  "date"      DATE         NULL
+)
+[2018-05-17 13:48:20] completed in 596ms  -- при этом автоматически создались 3 индекса: name_index, products_artikul_key UNIQUE,
+products_pkey UNIQUE :
+
+--Удалим name_index
+sql> drop index name_index on products
+[2018-05-17 16:05:54] completed in 145ms
+
+
+
+
+
+sql> UPDATE  "products" SET "old_price" = price*(1 + 0.2*RANDOM())
+[2018-05-17 14:03:23] 56475 rows affected in 2s 312ms
+
+sql> UPDATE "products" SET "date" = ('2018-01-05'::timestamp - RANDOM() *'3 year'::interval)
+[2018-05-17 14:21:20] 56475 rows affected in 2s 563ms
+
+sql> UPDATE "products" SET "quantity" = 2000 * RANDOM()
+[2018-05-17 14:25:59] 56475 rows affected in 2s 951ms
+
+sql> UPDATE "products" SET "image" = 'images/' || "artikul" || '.img'
+[2018-05-17 14:45:51] 56475 rows affected in 1s 75ms
+
+
+ql> SELECT "artikul","name","date" FROM "products" ORDER BY date DESC LIMIT 10
+[2018-05-17 14:48:57] 10 rows retrieved starting from 1 in 101ms (execution: 71ms, fetching: 30ms)
+
+6153950 Вегетососудистая дистония. Современный взгляд на лечение и профилактику                                     2018-01-04
+4943660 Волновые бесселевы пучки                                                                                    2018-01-04
+7160710 Бухгалтерский учет внешнеэкономической деятельности: Учебное пособие для бакалавров, 9-е изд  2018-01-04
+6764740 В один клик. Джефф Безос и история успеха Amazon.com                                                        2018-01-04
+7644880 OXF SHOW&TELL 1 iTOOLS *                                                                                    2018-01-04
+7022180 Волк и Бабочка. Философские сказки для взрослых 2018-01-04
+8643500 Биогеографическое картографирование 2-е изд., испр. и доп. учебное пособие для академического бакалавриата  2018-01-04
+4098740 Болезни органов пищеварения у детей при хеликобактериозе                                                    2018-01-04
+2940810 Антиквариат. Иллюстрированная энциклопедия                                                                  2018-01-04
+2750420 Волчонок и динозавры                                                                                        2018-01-04
+
+
+sql> SELECT "artikul","name","date" FROM "products" ORDER BY date DESC LIMIT 10 OFFSET 300
+[2018-05-17 14:53:26] 10 rows retrieved starting from 1 in 109ms (execution: 100ms, fetching: 9ms)
+
+6365870 Тепломассообмен, термохимическое и термоэрозионное разрушение тепловой защиты. Курс лекций                  2017-12-30
+5969210 Шьем вечерние платья для женщин шикарных размеров (+выкройки)                                               2017-12-30
+7168810 Турбо-Суслик. Как прекратить трахать себе мозг и начать жить.                                               2017-12-30
+8556760 Юридический энциклопедический словарь. 2-е изд                                                              2017-12-30
+7233210 Я управляю своими финансами: программа курса "Основы управления личными финансами"                          2017-12-30
+1949930 Шаг к успеху: успешное руководство, эффективное лидерство и стабильный личный успех                         2017-12-30
+3447910 Экстремальная кардиология: профилактика внезапной смерти                                                    2017-12-30
+8440970 Шаманское путешествие. Руководство для начинающих. + CD "Шаманский бубен. Практика шаманского путешествия"  2017-12-30
+7838890 Информационный метод творчества: Информация, язык, семиотика, ТРИЗ на службе инноваций                      2017-12-30
+6339740 Восемь лекций по математическому анализу                                                                    2017-12-30
+
+
+sql> SELECT "artikul","name","price" FROM "products" ORDER BY price  LIMIT 10
+[2018-05-17 14:58:40] 10 rows retrieved starting from 1 in 46ms (execution: 38ms, fetching: 8ms)
+
+8164650 От Мангазеи до Норильска. 30 историй Заполярья (ЗАКАЗНАЯ в коробе)                             1
+8188600 Сборник статей Пушкин и др                                                                     1
+6831340 Копилка народной мудрости                                                                      1
+8574310 Изучение программирования на языке Scratch с нуля с применением возможностей робототехники»    1
+8187770 24 закона обольщения. Грин Р.                                                                  1
+7008530 Билет в одну сторону: роман                                                                    1
+6168680 Дубль!!! Деревья из бисера* / Бульба Н. и др.                                                  1
+8574290 Знакомство с миром роботов: конструирование и программирование на языке G с нуля»              1
+6723090 60 моделей. Вяжем одежду для малышей*                                                          1
+8460990 HATBER, ТЕТРАДЬ (12 л) в кл., (зелен) (0223822)                                                3
+
+
+sql> SELECT "artikul","name","old_price","price", "old_price" - "price" AS "discount"
+FROM "products" ORDER BY "discount" DESC  LIMIT 10
+[2018-05-17 15:02:52] 10 rows retrieved starting from 1 in 54ms (execution: 33ms, fetching: 21ms)
+
+5639480 Библия с иллюстрациями С.Дали / 497/500 317086  274467  42619
+5639430 Библия с иллюстрациями С.Дали / 491/500 238993  199659  39334
+5638790 Библия с иллюстрациями С.Дали / 418/500 238759  199659  39100
+5638680 Библия с иллюстрациями С.Дали / 475/500 237915  199659  38256
+5639320 Библия с иллюстрациями С.Дали / 459/500 237913  199659  38254
+5639440 Библия с иллюстрациями С.Дали / 492/500 237689  199659  38030
+5638870 Библия с иллюстрациями С.Дали / 428/500 237002  199659  37343
+5638780 Библия с иллюстрациями С.Дали / 416/500 236758  199659  37099
+5638950 Библия с иллюстрациями С.Дали / 256/500 236575  199659  36916
+5638690 Библия с иллюстрациями С.Дали / 476/500 236272  199659  36613
+
+
+SELECT "artikul","name" FROM "products" WHERE "name" LIKE 'TEST%'
+[2018-05-17 15:24:37] 5 rows retrieved starting from 1 in 24ms (execution: 17ms, fetching: 7ms)
+
+7567040 TEST"Молекулярная физика в жизни, технике и природе: Учебное пособие
+2801640 TEST
+7018160 TEST Books
+6769680 TEST Амедео Модильяни
+3996380 TEST Армия и флот
+
+-- Исследуем влия ния наличия индекса на время выполнения запроса
+
+ sql>sql> SELECT * from "products" WHERE "name" =
+'Правила общения с детьми: 12 "нельзя", 12 "можно", 12 "надо". 2-е изд'
+[2018-05-17 16:31:50] 1 row retrieved starting from 1 in 76ms (execution: 40ms, fetching: 36ms)
+
+sql>sql> EXPLAIN SELECT * from "products" WHERE "name" =
+'Правила общения с детьми: 12 "нельзя", 12 "можно", 12 "надо". 2-е изд'
+[2018-05-17 16:33:36] 2 rows retrieved starting from 1 in 22ms (execution: 8ms, fetching: 14ms)
+
+
+QUERY PLAN
+Seq Scan on products  (cost=0.00..3967.50 rows=1 width=148)
+  Filter: ((name)::text = 'Правила общения с детьми: 12 "нельзя", 12 "можно", 12 "надо". 2-е изд'::text)
+
+
+-- Создаем индекс
+sql> CREATE INDEX "name_index" ON "products"("name")
+[2018-05-17 16:36:09] completed in 1s 184ms
+
+sql> EXPLAIN SELECT * from "products" WHERE "name" =
+'Правила общения с детьми: 12 "нельзя", 12 "можно", 12 "надо". 2-е изд'
+[2018-05-17 16:38:35] 2 rows retrieved starting from 1 in 25ms (execution: 9ms, fetching: 16ms)
+
+QUERY PLAN
+Index Scan using name_index on products  (cost=0.41..8.43 rows=1 width=148)
+  Index Cond: ((name)::text = 'Правила общения с детьми: 12 "нельзя", 12 "можно", 12 "надо". 2-е изд'::text)
+
+sql> SELECT * from "products" WHERE "name" =
+'Правила общения с детьми: 12 "нельзя", 12 "можно", 12 "надо". 2-е изд'
+[2018-05-17 16:41:43] 1 row retrieved starting from 1 in 21ms (execution: 8ms, fetching: 13ms)
+-- Общее время выполнения запроса сократилось с 76 ms до 21 ms.   Стоимомть запроса снизилась с 3967.50  до 8.4
