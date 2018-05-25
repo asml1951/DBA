@@ -1,0 +1,337 @@
+Lesson 4
+
+
+-- PostgreSQL
+
+--1.Создайте таблицу Категорий товаров ( в моем случае категории для книг) и таблицу производителей (в моем случае Издателей)
+
+sql> CREATE TABLE cats (
+  id SERIAL PRIMARY KEY ,
+  name VARCHAR(100)
+)
+[2018-05-23 15:42:44] completed in 106ms
+
+sql> CREATE TABLE publishers (
+  id SERIAL PRIMARY KEY ,
+  name VARCHAR(100)
+)
+[2018-05-23 15:44:50] completed in 55ms
+
+sql> INSERT INTO cats(name) VALUES ('Научная литература'),('На иностранных языках'),('Детективы'),('Медицинская литература')
+[2018-05-23 16:52:35] 4 rows affected in 115ms
+
+--2. Добавьте в таблицу Товаров поля для связи с Категориями и Издателями. Создайте внешние ключи для этих связей. 
+
+sql> ALTER TABLE products ADD COLUMN cat_id INT
+[2018-05-24 09:55:25] completed in 89ms
+
+sql> ALTER TABLE products ADD FOREIGN KEY (cat_id) REFERENCES cats(id)
+ON UPDATE CASCADE
+ON DELETE RESTRICT
+[2018-05-24 10:36:05] completed in 18ms
+
+sql> ALTER TABLE products ADD COLUMN publisher_id INT
+[2018-05-24 09:55:50] completed in 12ms
+
+sql> ALTER TABLE products ADD FOREIGN KEY (publisher_id) REFERENCES publishers(id)
+ON UPDATE CASCADE
+ON DELETE RESTRICT
+[2018-05-24 10:33:47] completed in 22ms
+
+--Вручную вставляем значения в cat_id и publisher_id и смотрим результат:
+
+sql> select * from products
+ where cat_id NOTNULL
+[2018-05-24 10:54:26] 23 rows retrieved starting from 1 in 39ms (execution: 22ms, fetching: 17ms)
+
+32	6521690	"Новый курс" для Европы	168	173	images/6521690.img	23	2015-03-31	1	1
+251	7691190	100ВР Замок (12+)	300	306	images/7691190.img	1193	2016-02-18	3	1
+27	7567040	TEST"Молекулярная физика в жизни, технике и природе: Учебное пособие	3048	3327	images/7567040.img	759	2016-05-19	2	2
+366	3624950	200 рецептов народной медицины	62	65	images/3624950.img	517	2016-02-03	5	2
+28	6991160	"НАШЕ" И "МОЁ": Диалектика гуманистического материализма	1009	1112	images/6991160.img	1658	2015-02-28	2	2
+549	5603370	50 семейных обедов	1057	1164	images/5603370.img	1426	2016-03-07	3	1
+715	4423020	Animal Bop Won't Stop +CD ***	949	959	images/4423020.img	1620	2017-04-13	3	3
+29	4757980	"Небесный огонь" и  другие рассказы	422	495	images/4757980.img	1323	2017-06-02	4	3
+30	7421320	"Новая логика": Критическое исследование и разъяснение новых и старых заблуждений и ошибок. 2-е изд	766	888	images/7421320.img	1	2016-01-28	2	2
+1124	7961280	ET:OXF MIN SCH THES (2016)	595	628	images/7961280.img	407	2015-06-22	3	4
+1375	5111430	Les dangers de l'inc	195	212	images/5111430.img	171	2016-02-19	3	3
+1756	7778950	OXFORD ENGLISH 2 TG (OXED) *	6916	8298	images/7778950.img	769	2017-02-23	3	4
+2539	7094890	Агата Кристи	298	357	images/7094890.img	1629	2016-06-05	4	3
+2908	7453810	Алгебра и теория чисел	539	625	images/7453810.img	1187	2015-09-09	2	2
+4125	6093730	Архимед	419	449	images/6093730.img	1759	2015-11-28	1	1
+4089	4157110	Артрит. Как избавиться от боли в суставах	173	204	images/4157110.img	1073	2017-02-09	5	1
+55693	2499670	Эпидемический паротит	175	187	images/2499670.img	623	2016-01-18	5	2
+4292	6023630	Астрономия за 30 секунд	725	791	images/6023630.img	1533	2016-10-29	2	2
+40	6522330	"Старая" Россия и "новая" Норвегия: Российско-норвежские отношения (1905--1917)	2474	2578	images/6522330.img	1935	2017-12-03	1	1
+4661	5233140	Бар "Либерти"	72	79	images/5233140.img	720	2017-07-06	3	3
+5958	5741030	Бот: роман	329	346	images/5741030.img	1813	2017-10-29	4	3
+2234	7537390	VSI HISTORY ROMAN BRITAIN (17) 2ED May-2015	578	603	images/7537390.img	377	2016-07-15	1	4
+7444	2940850	Версаль	1248	1303	images/2940850.img	287	2016-06-29	1	3
+
+--Создайте запросы, которые:
+         Выберут все товары с указанием их категории и бренда:
+  sql> SELECT artikul AS "Код книги",products.name AS "Название книги",cats.name AS "Категория",publishers.name AS "Издательство" FROM products
+INNER JOIN cats ON  cats.id = products.cat_id
+  INNER JOIN publishers ON  publishers.id = products.publisher_id
+[2018-05-24 13:16:22] 23 rows retrieved starting from 1 in 140ms (execution: 117ms, fetching: 23ms)
+
+6521690	"Новый курс" для Европы	                                                История	                Мир
+7691190	100ВР Замок (12+)	На иностранных языках	Мир
+7567040	TEST"Молекулярная физика в жизни, технике и природе: Учебное пособие	Научная литература	    Наука
+3624950	200 рецептов народной медицины	                                        Медицинская литература	Наука
+6991160	"НАШЕ" И "МОЁ": Диалектика гуманистического материализма	            Научная литература	    Наука
+5603370	50 семейных обедов	На иностранных языках	Мир
+4423020	Animal Bop Won't Stop +CD ***	                                        На иностранных языках	Иностранная литература
+4757980	"Небесный огонь" и  другие рассказы	Детективы	Иностранная литература
+7421320	"Новая логика": Критическое исследование и разъяснение новых и старых 	Научная литература	    Наука
+7961280	ET:OXF MIN SCH THES (2016)	                                            На иностранных языках	McGraw-Hill
+5111430	Les dangers de l'inc	                                                На иностранных языках	Иностранная литература
+7778950	OXFORD ENGLISH 2 TG (OXED) *	                                        На иностранных языках	McGraw-Hill
+7094890	Агата Кристи	                                                        Детективы	            Иностранная литература
+7453810	Алгебра и теория чисел	                                                Научная литература	    Наука
+6093730	Архимед	                                                                История	                Мир
+4157110	Артрит. Как избавиться от боли в суставах	                            Медицинская литература	Мир
+2499670	Эпидемический паротит	                                                Медицинская литература	Наука
+6023630	Астрономия за 30 секунд	                                                Научная литература	    Наука
+6522330	"Старая" Россия и "новая" Норвегия: Российско-норвежские отношения   	История	                Мир
+5233140	Бар "Либерти"	                                                        На иностранных языках	Иностранная литература
+5741030	Бот: роман	                                                            Детективы	            Иностранная литература
+7537390	VSI HISTORY ROMAN BRITAIN (17) 2ED May-2015	                            История	                McGraw-Hill
+2940850	Версаль	                                                                История	                Иностранная литература
+
+
+--   Выберем все товары, бренд которых начинается на букву "А":
+
+sql> SELECT artikul AS "Код книги",products.name AS "Название книги",cats.name AS "Категория",publishers.name AS "Издательство" FROM products
+INNER JOIN cats ON  cats.id = products.cat_id
+  INNER JOIN publishers ON  publishers.id = products.publisher_id
+ where products.name LIKE 'А%'
+[2018-05-24 13:33:54] 5 rows retrieved starting from 1 in 111ms (execution: 90ms, fetching: 21ms)
+
+7094890	Агата Кристи	                            Детективы	Иностранная литература
+7453810	Алгебра и теория чисел	                    Научная литература	Наука
+6093730	Архимед                                     История	Мир
+4157110	Артрит. Как избавиться от боли в суставах	Медицинская литература	Мир
+6023630	Астрономия за 30 секунд	                    Научная литература	Наука
+
+-- Выведем список категорий и число товаров в каждой (используйте подзапросы и функцию COUNT(), использовать группировку нельзя)
+
+sql> SELECT name AS "Категория",
+  (SELECT COUNT(*) FROM products WHERE cats.id = products.cat_id)
+  AS "Количество названий книг",
+  (SELECT SUM(quantity) FROM products WHERE cats.id = products.cat_id)
+  AS "Количество книг"
+FROM cats
+[2018-05-24 14:21:34] 5 rows retrieved starting from 1 in 96ms (execution: 85ms, fetching: 11ms)
+
+Категория              |Количество названий книг   |Количество книг
+-------------------------------------------------------------------
+История	                5	                        4381
+Научная литература	    5	                        5138
+На иностранных языках	7	                        6306
+Детективы	            3	                        4765
+Медицинская литература	3	                        2213
+
+--  * Выбрать для каждой категории книг список издательств, входящих в нее
+ --Без использования группировки получилось только так:
+
+sql> SELECT DISTINCT publishers.name AS "Издательство",cats.name AS "Категории" FROM products,cats,publishers
+  WHERE   products.cat_id = cats.id
+  AND     publishers.id  = products.publisher_id
+  ORDER BY cats.name
+[2018-05-24 16:20:26] 10 rows retrieved starting from 1 in 57ms (execution: 27ms, fetching: 30ms)
+
+Издательство                       Категория
+
+Иностранная литература	           Детективы
+McGraw-Hill	                       История
+Иностранная литература	           История
+Мир	                               История
+Мир	                               Медицинская литература
+Наука	                           Медицинская литература
+McGraw-Hill	                       На иностранных языках
+Иностранная литература	           На иностранных языках
+Мир	                               На иностранных языках
+Наука	                           Научная литература
+
+
+
+
+--    MySQL
+
+sql> CREATE TABLE cats (
+  id SERIAL PRIMARY KEY ,
+  name VARCHAR(100)
+)
+[2018-05-24 17:06:45] completed in 286ms
+
+sql> CREATE TABLE publishers (
+  id SERIAL PRIMARY KEY ,
+  name VARCHAR(100)
+)
+[2018-05-24 17:08:40] completed in 151ms
+
+sql> INSERT INTO `tovar`.`cats` (`name`) VALUES ('История')
+[2018-05-24 17:10:52] 1 row affected in 48ms
+sql> INSERT INTO `tovar`.`cats` (`name`) VALUES ('Наука')
+[2018-05-24 17:10:52] 1 row affected in 4ms
+sql> INSERT INTO `tovar`.`cats` (`name`) VALUES ('Иностранная литература')
+[2018-05-24 17:10:52] 1 row affected in 3ms
+sql> INSERT INTO `tovar`.`cats` (`name`) VALUES ('Детективы')
+[2018-05-24 17:10:52] 1 row affected in 3ms
+sql> INSERT INTO `tovar`.`cats` (`name`) VALUES ('McGraw-Hill')
+[2018-05-24 17:10:52] 1 row affected in 2ms
+sql> UPDATE `tovar`.`cats` t SET t.`name` = 'Медицинская литература' WHERE t.`id` = 5
+[2018-05-24 17:13:48] 1 row affected in 39ms
+
+sql> INSERT INTO `tovar`.`publishers` (`name`) VALUES ('Мир')
+[2018-05-24 17:13:02] 1 row affected in 3ms
+sql> INSERT INTO `tovar`.`publishers` (`name`) VALUES ('Наука')
+[2018-05-24 17:13:02] 1 row affected in 1ms
+sql> INSERT INTO `tovar`.`publishers` (`name`) VALUES ('Иностранная литература')
+[2018-05-24 17:13:02] 1 row affected in 2ms
+sql> INSERT INTO `tovar`.`publishers` (`name`) VALUES ('McGraw-Hill')
+[2018-05-24 17:13:02] 1 row affected in 1ms
+
+
+sql> ALTER TABLE products ADD COLUMN cat_id INT
+[2018-05-25 09:58:51] completed in 1s 536ms
+
+-- На этом шаге получаю ошибку:
+sql> ALTER TABLE products ADD FOREIGN KEY (cat_id) REFERENCES cats(id)
+  ON UPDATE CASCADE
+  ON DELETE RESTRICT
+[2018-05-25 10:30:18] [HY000][150] Create table 'tovar/#sql-2260_13' with foreign key constraint failed. There is no index in the referenced table where the referenced columns appear as the first columns.
+[2018-05-25 10:30:18] [HY000][1215] Cannot add foreign key constraint
+
+--Вношу изменения в таблице products (типы данных cats.id  и products.cat_id  должны совпадать)
+
+ALTER TABLE products MODIFY cat_id bigint(20) unsigned;
+
+sql> ALTER TABLE products ADD FOREIGN KEY (cat_id) REFERENCES cats(id)
+  ON UPDATE CASCADE
+  ON DELETE RESTRICT
+[2018-05-25 10:50:46] 1100 rows affected in 709ms    --Yes!
+
+sql> ALTER TABLE products ADD COLUMN publisher_id BIGINT(20) UNSIGNED
+[2018-05-25 10:41:11] completed in 1s 480ms
+
+sql> ALTER TABLE products ADD FOREIGN KEY (publisher_id) REFERENCES publishers(id)
+  ON UPDATE CASCADE
+  ON DELETE RESTRICT
+[2018-05-25 10:56:04] 1100 rows affected in 811ms
+
+--Заполняем добавленные столбцы данными и смотрим
+
+sql> SELECT * FROM products WHERE cat_id IS NOT NULL
+[2018-05-25 11:13:03] 21 rows retrieved starting from 1 in 48ms (execution: 10ms, fetching: 38ms)
+
+16	4136860	"Гражданская война во Франции" К. Маркса и современность	301	339	images/4136860.img	1248	2017-10-08	1	1
+19	4789280	"Житие канцлера Франциска Бакона": Биография Ф. Бэкона в уникальном переводе Василия Тредиаковского (1760г.) В. К. Тредиаковский как мыслитель и перев	646	742	images/4789280.img	343	2016-01-10	1	2
+31	6395660	"Новый историзм": Науковедческий анализ	391	397	images/6395660.img	518	2017-07-29	1	3
+36	1835437	"Политическое завещание" Ленина: реальность истории и мифы политики	429	469	images/1835437.img	591	2016-08-09	1	1
+37	4113350	"Последний римлянин" Боэций	436	515	images/4113350.img	1796	2017-10-08	1	3
+12	8342550	"Power of Now".Сила Настоящего: Руководство по духовному пробуждению нов. (мяг)	338	390	images/8342550.img	1714	2016-07-30	2	4
+13	7422750	"Всё-таки она вертится…": Экскурс в историю астрономии	504	553	images/7422750.img	130	2018-01-28	2	2
+20	6438120	"Загадочные" явления мозга и психики человека в свете современной науки	175	202	images/6438120.img	1311	2016-03-09	2	2
+27	7567040	TEST "Молекулярная физика в жизни, технике и природе: Учебное пособие	3048	3560	images/7567040.img	190	2018-02-19	2	2
+34	5640320	"Основы теории преобразования сигналов в оптико-электронных системах. Учебник., 2-е изд., стереотип	1869	1902	images/5640320.img	447	2016-06-30	2	1
+38	8623850	"Развитие лесопильного производства в России". Учебн. пос., 1-е изд.	1262	1292	images/8623850.img	1206	2016-04-13	2	1
+46	7417630	"Тепловая смерть" на Земле и сценарий ее предотвращения: Энергетика, построенная на круговороте тепла и вечных двигателях 2-го рода	638	720	images/7417630.img	1491	2016-03-05	2	4
+10	3027600	"New Millennium English 9 кл. Английский язык: Рабочая тетрадь к учебнику английского языка. Английский язык нового тысячелетия	278	306	images/3027600.img	1451	2016-01-04	3	4
+11	3027580	"New Millennium English" 11 кл. Книга для учителя к учебнику английского языка	728	794	images/3027580.img	813	2017-01-07	3	4
+1	8086970	   Детские годы Багрова+внука	827	990	images/8086970.img	1447	2017-10-04	4	1
+62	5921530	БЕЛОГРУДЫЙ МЕДВЕДЬ. Фотоальбом.	1514	1692	images/5921530.img	629	2016-05-29	4	3
+77	8139220	«Франсафрик»: тень Елисейского дворца над Черным континентом. – Серия «Информационные войны и цветные революции»	1137	1179	images/8139220.img	165	2017-01-30	4	3
+172	6263710	100 тайн Третьего рейха	298	299	images/6263710.img	1032	2017-11-05	4	4
+8	7713280	 Руководство к практическим занятиям по урологии	194	210	images/7713280.img	1539	2016-06-14	5	2
+187	8264120	100%-е зрение. Лечение, восстановление, профилактика	229	261	images/8264120.img	451	2017-04-08	5	4
+192	4157040	1000 великолепных советов по уходу за кожей	361	376	images/4157040.img	1898	2016-06-06	5	1
+
+
+
+--Выберем все книги с указанием их категории и издательства:
+
+sql> SELECT artikul AS "Код книги",products.name AS "Название книги",cats.name AS "Категория",publishers.name AS "Издательство" FROM products
+  INNER JOIN cats ON  cats.id = products.cat_id
+  INNER JOIN publishers ON  publishers.id = products.publisher_id
+[2018-05-25 11:16:19] 21 rows retrieved starting from 1 in 35ms (execution: 11ms, fetching: 24ms)
+
+4136860	"Гражданская война во Франции" К. Маркса и современность	История	Мир
+1835437	"Политическое завещание" Ленина: реальность истории и мифы политики	История	Мир
+4789280	"Житие канцлера Франциска Бакона": Биография Ф. Бэкона в уникальном переводе Василия Тредиаковского (1760г.) В. К. Тредиаковский как мыслитель и перев	История	Наука
+6395660	"Новый историзм": Науковедческий анализ	История	Иностранная литература
+4113350	"Последний римлянин" Боэций	История	Иностранная литература
+5640320	"Основы теории преобразования сигналов в оптико-электронных системах. Учебник., 2-е изд., стереотип	Наука	Мир
+8623850	"Развитие лесопильного производства в России". Учебн. пос., 1-е изд.	Наука	Мир
+7422750	"Всё-таки она вертится…": Экскурс в историю астрономии	Наука	Наука
+6438120	"Загадочные" явления мозга и психики человека в свете современной науки	Наука	Наука
+7567040	TEST "Молекулярная физика в жизни, технике и природе: Учебное пособие	Наука	Наука
+8342550	"Power of Now".Сила Настоящего: Руководство по духовному пробуждению нов. (мяг)	Наука	McGraw-Hill
+7417630	"Тепловая смерть" на Земле и сценарий ее предотвращения: Энергетика, построенная на круговороте тепла и вечных двигателях 2-го рода	Наука	McGraw-Hill
+3027600	"New Millennium English 9 кл. Английский язык: Рабочая тетрадь к учебнику английского языка. Английский язык нового тысячелетия	Иностранная литература	McGraw-Hill
+3027580	"New Millennium English" 11 кл. Книга для учителя к учебнику английского языка	Иностранная литература	McGraw-Hill
+8086970	   Детские годы Багрова+внука	Детективы	Мир
+5921530	БЕЛОГРУДЫЙ МЕДВЕДЬ. Фотоальбом.	Детективы	Иностранная литература
+8139220	«Франсафрик»: тень Елисейского дворца над Черным континентом. – Серия «Информационные войны и цветные революции»	Детективы	Иностранная литература
+6263710	100 тайн Третьего рейха	Детективы	McGraw-Hill
+4157040	1000 великолепных советов по уходу за кожей	Медицинская литература	Мир
+7713280	 Руководство к практическим занятиям по урологии	Медицинская литература	Наука
+8264120	100%-е зрение. Лечение, восстановление, профилактика	Медицинская литература	McGraw-Hill
+
+--Ищем книги, названия которых начинаются на "А" 
+sql> SELECT artikul AS "Код книги",products.name AS "Название книги",cats.name AS "Категория",publishers.name AS "Издательство" FROM products
+  INNER JOIN cats ON  cats.id = products.cat_id
+  INNER JOIN publishers ON  publishers.id = products.publisher_id
+where products.name LIKE 'А%'
+[2018-05-25 11:20:10] 0 rows retrieved in 46ms (execution: 37ms, fetching: 9ms)  --Нет таких книг. Тогда Ищем книги, названия которых начинаются на "N"
+
+sql> SELECT artikul AS "Код книги",products.name AS "Название книги",cats.name AS "Категория",publishers.name AS "Издательство" FROM products
+  INNER JOIN cats ON  cats.id = products.cat_id
+  INNER JOIN publishers ON  publishers.id = products.publisher_id
+where products.name LIKE '"N%'
+[2018-05-25 11:25:15] 2 rows retrieved starting from 1 in 20ms (execution: 8ms, fetching: 12ms)
+
+3027600	"New Millennium English 9 кл. Английский язык: Рабочая тетрадь к учебнику английского языка. Английский язык нового тысячелетия	Иностранная литература	McGraw-Hill
+3027580	"New Millennium English" 11 кл. Книга для учителя к учебнику английского языка	Иностранная литература	McGraw-Hill
+
+
+-- Выведем список категорий и число товаров в каждой (используйте подзапросы и функцию COUNT(), использовать группировку нельзя)
+
+sql> SELECT name AS "Категория",
+       (SELECT COUNT(*) FROM products WHERE cats.id = products.cat_id)
+            AS "Количество названий книг",
+       (SELECT SUM(quantity) FROM products WHERE cats.id = products.cat_id)
+            AS "Количество книг"
+FROM cats
+[2018-05-25 11:28:53] 5 rows retrieved starting from 1 in 71ms (execution: 45ms, fetching: 26ms)
+
+История	                5	4496
+Наука	                7	6489
+Иностранная литература	2	2264
+Детективы	            4	3273
+Медицинская литература	3	3888
+
+
+----  * Выбрать для каждой категории книг список издательств, входящих в нее
+
+sql> SELECT DISTINCT publishers.name AS "Издательство",cats.name AS "Категории" FROM products,cats,publishers
+WHERE   products.cat_id = cats.id
+        AND     publishers.id  = products.publisher_id
+ORDER BY cats.name
+[2018-05-25 11:33:08] 13 rows retrieved starting from 1 in 26ms (execution: 13ms, fetching: 13ms)
+
+Издательство
+Мир	                            Детективы
+Иностранная литература	        Детективы
+McGraw-Hill                   	Детективы
+McGraw-Hill	                    Иностранная литература
+Иностранная литература	        История
+Мир	                            История
+Наука	                          История
+Мир	                            Медицинская литература
+Наука	                          Медицинская литература
+McGraw-Hill	                    Медицинская литература
+McGraw-Hill	                    Наука
+Мир                           	Наука
+Наука	                          Наука
