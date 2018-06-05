@@ -1,0 +1,106 @@
+Lesson 5
+
+--PostgreSQL
+
+1. Запрос, который выберет категории и среднюю цену товаров в каждой категории, при условии, что эта средняя цена менее 1000 рублей (выбираем "бюджетные" категории товаров)
+
+ Сначала посмотрим средние цены в категориях:
+
+sql> SELECT CAST(AVG(price) AS NUMERIC(7,2)) AS average_price,
+COUNT(cats.id) AS number_of_books,cats.name FROM cats
+INNER JOIN products
+ON cats.id = products.cat_id
+GROUP BY  cats.name
+[2018-06-01 15:12:03] 5 rows retrieved starting from 1 in 38ms (execution: 7ms, fetching: 31ms)
+
+average_price | number_of_books | name
+977.40	        5	              История
+136.67	        3	              Медицинская литература
+349.67	        3	              Детективы
+1217.40	        5	              Научная литература
+1440.57	        7	              На иностранных языках
+
+ Выберем категории со средней ценой меньше 1000
+
+ sql> SELECT CAST(AVG(price) AS NUMERIC(7,2)) AS average_price,
+COUNT(cats.id) AS number_of_books,cats.name FROM cats
+INNER JOIN products
+ON cats.id = products.cat_id
+GROUP BY  cats.name
+HAVING  AVG(price) < 1000
+[2018-06-01 15:19:21] 3 rows retrieved starting from 1 in 47ms (execution: 31ms, fetching: 16ms)
+
+349.67	3	Детективы
+977.40	5	История
+136.67	3	Медицинская литература
+
+2.   "Улучшите предыдущий запрос таким образом, чтобы в расчет средней цены включались только товары, имеющиеся на складе."
+
+sql> SELECT CAST(AVG(price) AS NUMERIC(7,2)) AS average_price,
+COUNT(cats.id) AS number_of_books,cats.name FROM cats
+INNER JOIN products
+ON cats.id = products.cat_id
+WHERE products.quantity > 0
+GROUP BY  cats.name
+HAVING  AVG(price) < 1000
+[2018-06-04 09:08:41] 3 rows retrieved starting from 1 in 49ms (execution: 25ms, fetching: 24ms)
+
+349.67	3	Детективы
+977.40	5	История
+136.67	3	Медицинская литература    -- Результат ничем не отличаеся от предыдущего, что не удивительно, поскольку в таблице products нет   нулевых значений для quantity. Попробуем  в расчет средней цены включить только книги, имеющиеся на складе в количестве больше 1000:
+
+
+ql> SELECT CAST(AVG(price) AS NUMERIC(7,2)) AS average_price,
+COUNT(cats.id) AS number_of_books,cats.name FROM cats
+INNER JOIN products
+ON cats.id = products.cat_id
+WHERE products.quantity > 1000
+GROUP BY  cats.name
+HAVING  AVG(price) < 1000
+[2018-06-04 09:17:59] 4 rows retrieved starting from 1 in 28ms (execution: 18ms, fetching: 10ms)
+
+173.00	1	Медицинская литература
+349.67	3	Детективы
+757.67	3	Научная литература
+768.67	3	На иностранных языках
+
+
+3. Добавьте к таблице брендов класс бренда (A, B, C). Например, A - Apple, B - Samsung, C - Xiaomi. Напишите запрос, 
+который для каждой категории и класса брендов, представленных в категории выберет среднюю цену товаров.
+
+sql> ALTER TABLE publishers ADD COLUMN class CHAR(1)
+[2018-06-04 13:04:29] completed in 410ms
+
+
+[2018-06-05 08:48:01] 8 rows retrieved starting from 1 in 75ms (execution: 50ms, fetching: 25ms)
+sql> SELECT AVG(products.price),publishers.class
+  FROM ((products INNER JOIN cats ON products.cat_id = cats.id)
+    INNER JOIN publishers ON publishers.id = products.publisher_id
+  )
+  WHERE cats.id = 1
+  GROUP BY publishers.class
+[2018-06-05 09:01:52] 3 rows retrieved starting from 1 in 219ms (execution: 110ms, fetching: 109ms)
+
+avg     class
+1077.25	A
+578	B
+1558.5	C
+
+4. Добавим к своей базе данных таблицу заказов. Простейший вариант - номер заказа, дата и время, ID товара.
+
+sql> CREATE TABLE orders (
+  id         SERIAL PRIMARY KEY,
+  order_id INTEGER,
+  date       TIMESTAMP(2),
+  product_id INTEGER,
+)
+[2018-06-05 09:50:31] completed in 602ms
+
+sql> ALTER TABLE orders ADD FOREIGN KEY (product_id) REFERENCES products(id)
+ON UPDATE CASCADE
+ON DELETE RESTRICT
+[2018-06-05 10:41:20] completed in 193ms
+
+5. Напишите запрос, который выведет таблицу с полями "дата", "число заказов за дату", "сумма заказов за дату". Для этого вам придется самостоятельно найти информацию о функциях работы с датой и временем.
+
+
