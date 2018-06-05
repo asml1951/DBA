@@ -73,18 +73,50 @@ sql> ALTER TABLE publishers ADD COLUMN class CHAR(1)
 
 
 [2018-06-05 08:48:01] 8 rows retrieved starting from 1 in 75ms (execution: 50ms, fetching: 25ms)
+
+sql> SELECT DISTINCT c1.name, p1.class,
+  (SELECT AVG(pr2.price)
+     FROM products pr2, cats c2,publishers p2
+    WHERE c1.id = c2.id
+    AND p1.class = p2.class
+    AND pr2.cat_id = c2.id
+    AND pr2.publisher_id = p2.id)
+  FROM products pr1,cats c1,publishers p1
+WHERE pr1.cat_id = c1.id
+AND   pr1.publisher_id = p1.id
+ORDER BY c1.name
+[2018-06-05 15:58:37] 13 rows retrieved starting from 1 in 271ms (execution: 249ms, fetching: 22ms)
+
+
+Детективы	             A	349.6666666666666667
+Детективы	             C	349.6666666666666667
+История	               A	1077.25
+История              	 B	578
+История	               C	1558.5
+Медицинская литература	A	173
+Медицинская литература	B	118.5
+Медицинская литература	C	458
+На иностранных языках	 A	514.6
+На иностранных языках	 B	3755.5
+На иностранных языках	 C	6916
+Научная литература   	 B	1199.5
+Научная литература  	  C	11235
+
+
+Для проверки сделаем запрос:
+
 sql> SELECT AVG(products.price),publishers.class
-  FROM ((products INNER JOIN cats ON products.cat_id = cats.id)
-    INNER JOIN publishers ON publishers.id = products.publisher_id
-  )
-  WHERE cats.id = 1
-  GROUP BY publishers.class
-[2018-06-05 09:01:52] 3 rows retrieved starting from 1 in 219ms (execution: 110ms, fetching: 109ms)
+FROM ((products INNER JOIN cats ON products.cat_id = cats.id)
+  INNER JOIN publishers ON publishers.id = products.publisher_id
+)
+WHERE cats.name = 'История'
+GROUP BY publishers.class
+[2018-06-05 16:02:42] 3 rows retrieved starting from 1 in 27ms (execution: 13ms, fetching: 14ms)
 
 avg     class
 1077.25	A
-578	B
-1558.5	C
+578	    B
+1558.5 	C
 
 4. Добавим к своей базе данных таблицу заказов. Простейший вариант - номер заказа, дата и время, ID товара.
 
