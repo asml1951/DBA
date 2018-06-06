@@ -71,6 +71,85 @@ HAVING  AVG(price) < 1000
 sql> ALTER TABLE publishers ADD COLUMN class CHAR(1)
 [2018-06-04 13:04:29] completed in 410ms
 
+sql> SELECT   c1.name AS category, p1.class AS class,
+  (SELECT AVG(pr2.price)
+   FROM (products pr2
+     INNER JOIN  cats c2 ON  pr2.cat_id = c2.id)
+        INNER JOIN publishers p2  ON pr2.publisher_id = p2.id
+    WHERE c2.id = c1.id
+    AND p2.class = p1.class
+  ) AS avg_price
+FROM (products pr1
+INNER JOIN  cats c1 ON  pr1.cat_id = c1.id)
+  INNER JOIN publishers p1  ON pr1.publisher_id = p1.id
+ORDER BY c1.name,class
+[2018-06-06 15:13:54] 33 rows retrieved starting from 1 in 250ms
+
+Детективы	A	349.6666666666666667
+Детективы	A	349.6666666666666667
+Детективы	A	349.6666666666666667
+Детективы	C	349.6666666666666667
+Детективы	C	349.6666666666666667
+Детективы	C	349.6666666666666667
+История  	A	1077.25
+История	    A	1077.25
+История	    A	1077.25
+История	    A	1077.25
+История	    B	578
+История  	C	1558.5
+История	    C	1558.5
+Медицинская литература	A	173
+Медицинская литература	B	118.5
+Медицинская литература	B	118.5
+Медицинская литература	C	458
+На иностранных языках	A	514.6
+На иностранных языках	A	514.6
+На иностранных языках	A	514.6
+На иностранных языках	A	514.6
+На иностранных языках	A	514.6
+На иностранных языках	B	3755.5
+На иностранных языках	B	3755.5
+На иностранных языках	C	6916
+Научная литература	    B	1199.5
+Научная литература	    B	1199.5
+Научная литература	    B	1199.5
+Научная литература	    B	1199.5
+Научная литература	    B	1199.5
+Научная литература	    B	1199.5
+Научная литература	    C	11235
+Научная литература	   C	11235
+
+
+sql> SELECT DISTINCT  c1.name AS category, p1.class AS class,
+  (SELECT AVG(pr2.price)
+   FROM (products pr2
+     INNER JOIN  cats c2 ON  pr2.cat_id = c2.id)
+        INNER JOIN publishers p2  ON pr2.publisher_id = p2.id
+    WHERE c2.id = c1.id
+    AND p2.class = p1.class
+  ) AS avg_price
+FROM (products pr1
+INNER JOIN  cats c1 ON  pr1.cat_id = c1.id)
+  INNER JOIN publishers p1  ON pr1.publisher_id = p1.id
+ORDER BY c1.name,class
+[2018-06-06 15:17:43] 13 rows retrieved starting from 1 in 265ms (execution: 250ms, fetching: 15ms)
+
+
+Детективы           	A	349.6666666666666667
+Детективы	            C	349.6666666666666667
+История	                A	1077.25
+История	                B	578
+История             	C	1558.5
+Медицинская литература	A	173
+Медицинская литература	B	118.5
+Медицинская литература	C	458
+На иностранных языках	A	514.6
+На иностранных языках	B	3755.5
+На иностранных языках	C	6916
+Научная литература	    B	1199.5
+Научная литература	    C	11235
+
+
 
 [2018-06-05 08:48:01] 8 rows retrieved starting from 1 in 75ms (execution: 50ms, fetching: 25ms)
 
