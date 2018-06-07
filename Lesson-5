@@ -136,4 +136,20 @@ ON DELETE RESTRICT
 
 5. Напишите запрос, который выведет таблицу с полями "дата", "число заказов за дату", "сумма заказов за дату". Для этого вам придется самостоятельно найти информацию о функциях работы с датой и временем.
 
+sql> SELECT  DISTINCT DATE(od1.date),
+  (SELECT COUNT(od2.order_id) FROM orders od2
+  WHERE DATE(od2.date) = DATE(od1.date)),
+  (SELECT SUM(products.price)
+   FROM orders od2
+     INNER JOIN products ON od2.product_id = products.id
+   WHERE DATE(od2.date) = DATE(od1.date)
+  )
+FROM orders od1
+GROUP BY od1.date
+[2018-06-07 11:04:28] 4 rows retrieved starting from 1 in 83ms (execution: 49ms, fetching: 34ms)
+
+2018-01-10	2	468
+2018-01-11	3	4119
+2018-01-12	6	3633
+2018-01-13	2	1188
 
