@@ -154,3 +154,103 @@ GROUP BY od1.date
 2018-01-13	 3	 12649
 
 
+6.* Улучшите этот запрос, введя группировку по признаку "дешевый товар", "средняя цена", "дорогой товар". Критерии отнесения товара к той или иной группе определите самостоятельно. В итоге должно получиться "дата", "группа по цене", "число заказов", "сумма заказов"
+
+
+Для решения этой задачи я содал две новые таблицы myordrs и myproducts и наполнил их данными:
+
+sql> SELECT id,date,product_id,order_id
+FROM myorders
+[2018-06-09 13:06:45] 15 rows retrieved starting from 1 in 93ms (execution: 41ms, fetching: 52ms)
+
+id  date        product_id  order_id
+1	2018-06-04	1	        1
+2	2018-06-04	2	        1
+3	2018-06-04	12	        1
+4	2018-06-05	7	        2
+5	2018-06-05	8	        2
+6	2018-06-05	9	        3
+7	2018-06-05	5	        3
+8	2018-06-05	8	        3
+9	2018-06-06	3	        4
+10	2018-06-06	5	        4
+11	2018-06-07	4	        5
+12	2018-06-07	11	        6
+13	2018-06-07	12	        6
+14	2018-06-07	9	        7
+15	2018-06-07	8	        8
+
+sql> SELECT id,category,price
+FROM myproducts
+[2018-06-09 13:16:05] 12 rows retrieved starting from 1 in 15ms (execution: 0ms, fetching: 15ms)
+
+12	4	29
+10	3	430
+7	3	560
+5	2	4000
+2	1	2000
+3	1	250
+11	4	780
+4	2	21000
+6	2	360
+8	3	4500
+1	1	1100
+9	3	2500
+
+
+Теперь делаем запрос:
+
+sql> SELECT date,price_cat,  COUNT(*), SUM(price)
+FROM (SELECT od1.date,
+        CASE WHEN myproducts.price BETWEEN 500 AND 2000 THEN 'middle'
+        WHEN myproducts.price > 2000 THEN  'expensive'
+        ELSE  'cheap'
+        END  AS price_cat,
+        myproducts.price
+      FROM myorders od1 INNER JOIN myproducts
+      ON od1.product_id = myproducts.id
+      ORDER BY date,price_cat) AS SUM
+GROUP BY date,price_cat
+[2018-06-09 13:27:00] 9 rows retrieved starting from 1 in 31ms (execution: 0ms, fetching: 31ms)
+
+date        price_cat   count    sum
+2018-06-04	cheap	    1	     29
+2018-06-04	middle	    2	     3100
+2018-06-05	expensive	4	     15500
+2018-06-05	middle	    1	     560
+2018-06-06	cheap	    1	     250
+2018-06-06	expensive	1	     4000
+2018-06-07	cheap	    1	     29
+2018-06-07	expensive	3	     28000
+2018-06-07	middle	    1	     780
+
+Проверяем:
+
+sql> SELECT myorders.date,myorders.id,myproducts.id, myproducts.price
+FROM myorders INNER JOIN myproducts ON myorders.product_id = myproducts.id
+[2018-06-09 13:32:27] 15 rows retrieved starting from 1 in 47ms (execution: 31ms, fetching: 16ms)
+
+date       id   id  price
+2018-06-04	1	1	1100
+2018-06-04	2	2	2000
+2018-06-04	3	12	29
+2018-06-05	4	7	560
+2018-06-05	5	8	4500
+2018-06-05	6	9	2500
+2018-06-05	7	5	4000
+2018-06-05	8	8	4500
+2018-06-06	9	3	250
+2018-06-06	10	5	4000
+2018-06-07	11	4	21000
+2018-06-07	12	11	780
+2018-06-07	13	12	29
+2018-06-07	14	9	2500
+2018-06-07	15	8	4500
+
+На 2018-06-07  имеем 1 заказанный продукт ценой 29            cheap       sum=29
+                     3 зак. прод.  ценой 21000, 2500, 4500    expensive   sum=28000
+                     1 зак. прод.  ценой 780                  middle      sum=780
+
+
+
+
