@@ -125,7 +125,7 @@ sql> CREATE TABLE orders (
   id         SERIAL PRIMARY KEY,
   order_id INTEGER,
   date       TIMESTAMP(2),
-  product_id INTEGER,
+  product_id INTEGER
 )
 [2018-06-05 09:50:31] completed in 602ms
 
