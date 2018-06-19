@@ -74,7 +74,7 @@ CREATE FUNCTION discount( pr_id INTEGER) RETURNS DECIMAL(4,2)
               (price_before_last_change - price_after_last_change)/price_before_last_change * 100,
               0)
            INTO @discount  FROM products_events WHERE id = @max_id;
-    RETURN @discount;
+    RETURN @discount;   --   в процентах к старой цене
   END ;
 
   Проверяем:
