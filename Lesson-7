@@ -1,0 +1,104 @@
+Lesson 7
+
+--1. "Создайте триггеры на таблицу товаров, которые будут при создании товара, изменении его цены или удалении заполнять таблицу из пункта 2"
+
+-- Создаем таблицу products_events , где будем записывать события создания, удаления товаров или изменнения их цены
+
+create table products_events
+(
+  id                       bigint unsigned auto_increment primary key,
+  date                     timestamp null,
+  product_id               int       null,
+  event_type               char(10)  null,
+  price_before_last_change int       null,
+  price_after_last_change  int       null,
+  
+);
+
+-- Создаем тригеры:
+
+CREATE TRIGGER `after_insert_new_product`
+  AFTER INSERT ON products FOR EACH ROW
+  BEGIN
+
+    INSERT INTO products_events(
+                      date,product_id,event_type,price_before_last_change,
+                      price_after_last_change)
+      VALUES (NOW(),NEW.id,'INSERT',0,NEW.price);
+
+  END;
+
+CREATE TRIGGER  `after_update_product_price`
+  AFTER UPDATE ON products FOR EACH ROW
+  BEGIN
+
+    INSERT INTO products_events(date,product_id,
+                                event_type, price_before_last_change,
+                                price_after_last_change)
+      VALUES (NOW(),OLD.id,'UPDATE',OLD.price,NEW.price);
+
+
+ END ;
+
+CREATE TRIGGER `after_delete_product`
+  AFTER DELETE ON products  FOR EACH ROW
+  BEGIN
+     INSERT INTO products_events(date,product_id,
+                            event_type, price_before_last_change,
+                            price_after_last_change)
+     VALUES (NOW(),OLD.id,'DELETE',OLD.price,NULL );
+    END;
+
+
+
+-- выполняем несколько операций update,delete,insert  и смотрим в таблицу product_events
+
+
+SELECT * FROM products_events
+
+
+id 	date 	             product_id 	event_type 	price_before_last_change 	price_after_last_change 	
+4	2018-06-19 11:29:50	 1103	    UPDATE	    2000	                    1980	
+5	2018-06-19 11:30:35  1054	    UPDATE	    496	                        500	
+6	2018-06-19 11:43:52	 1060	    DELETE	    1068	                    NULL	
+7	2018-06-19 11:45:32	 1104	    INSERT	    0	                        2500	
+
+
+--2.* Создайте функцию "размер скидки", которая по ID товара будет вычислять - сколько составило последнее изменение цены на него в процентах, 
+--используя запрос к таблице из пункта 2. Примените эту функцию в запросе на выборку товаров.
+
+CREATE FUNCTION discount( pr_id INTEGER) RETURNS DECIMAL(4,2)
+  BEGIN
+    SELECT MAX(id) INTO @max_id FROM products_events WHERE product_id = pr_id;
+    SELECT IF((price_before_last_change - price_after_last_change) > 0,
+              (price_before_last_change - price_after_last_change)/price_before_last_change * 100,
+              0)
+           INTO @discount  FROM products_events WHERE id = @max_id;
+    RETURN @discount;
+  END ;
+
+  Проверяем:
+
+  sql> SELECT id, name,discount(id) AS discount FROM products WHERE id = 1103 -- старая цена 2000, новая 1980
+[2018-06-19 14:18:46] 1 row retrieved starting from 1 in 34ms (execution: 16ms, fetching: 18ms)
+
+id      name         discount
+1103	Test book 2	 1.05
+
+sql> SELECT id, name,discount(id) AS discount FROM products WHERE id = 1054  -- старая цена 496, новая 500
+[2018-06-19 14:21:25] 1 row retrieved starting from 1 in 31ms (execution: 13ms, fetching: 18ms)
+
+id      name                                discount
+1054	DVD. Блаженство это ваша природа	0.00
+
+
+sql> SELECT id, name,discount(id) AS discount FROM products WHERE id = 1104 -- Добавлен новый товар
+[2018-06-19 14:28:05] 1 row retrieved starting from 1 in 21ms (execution: 7ms, fetching: 14ms)
+
+id      name          discount
+1104	Test book 3	  0.00
+
+
+
+
+
