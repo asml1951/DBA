@@ -1,0 +1,66 @@
+Lesson 8
+
+--1. Установите ограничения на таблицу товаров:
+   -- На цены товаров
+    --На артикулы
+    --На поле "есть на складе"
+
+CREATE TABLE products
+(
+  id          SERIAL        NOT NULL
+    CONSTRAINT products_pkey
+    PRIMARY KEY,
+  category    INTEGER [],
+  artikul     INTEGER       NOT NULL
+    CHECK (artikul > 1000000),
+  name        VARCHAR(100)  NOT NULL,
+  price       NUMERIC(8, 2) NOT NULL CHECK(price > 100),
+  quantity    INTEGER,
+  is_in_stock BOOLEAN CHECK(quantity > 0)
+);
+
+
+
+sql> SELECT * FROM products WHERE 1 = ANY (category)
+[2018-06-20 10:59:43] 5 rows retrieved starting from 1 in 110ms (execution: 48ms, fetching: 62ms)
+
+--3.Допустим, что поступило требование: каждый товар может отныне находится в нескольких категориях сразу. 
+--    Перепроектируйте таблицу товаров, используя поле categories bigint[] и напишите запросы:
+--    Выбирающий все товары из заданной категории
+
+sql> SELECT * FROM products WHERE 1 = ANY (category)
+[2018-06-20 10:59:43] 5 rows retrieved starting from 1 in 110ms (execution: 48ms, fetching: 62ms)
+
+2	{1,2,4}	1000001	Молоток	           200.00	10	true
+3	{1,4}	1000002	Кувалда	           300.00	50	true
+4	{1,3}	1000003	Электродрель	   750.00	47	true
+6	{1,3}	1000005	Электронасос	   8900.00	24	true
+9	{1,4}	1000008	Отвертка	       230.00	40	true
+
+-- Выбирающий все категории и количество товаров в каждой из них
+
+ql> SELECT cat_name,(SELECT count(*) FROM products WHERE cats.id = ANY (category)) FROM cats
+[2018-06-20 11:41:47] 4 rows retrieved starting from 1 in 42ms (execution: 31ms, fetching: 11ms)
+
+Строительный инструмент	 7
+Инструмент для дачи	     4
+Электроинструмент	     4
+Ручной инструмент	     6
+
+
+--   Добавляющий определенный товар в определенную категорию (вам придется найти нужную функцию для работы с массивами)
+
+15	{2}	1000011	Ножницы	130.00	13	true
+16	{2}	1000012	Рубанок	480.00	9	true
+17	{2}	1000013	Напильник	311.00	18	true
+
+Эти товары находятся в категории 2 "Для дачи". Добавим их в категорию 4 "Ручной инструмент"
+
+sql> UPDATE products SET category = category || 4  WHERE category[2]  ISNULL
+[2018-06-20 13:50:15] 3 rows affected in 76ms
+
+Получаем:
+
+15	{2,4}	1000011	Ножницы	130.00	13	true
+16	{2,4}	1000012	Рубанок	480.00	9	true
+17	{2,4}	1000013	Напильник	311.00	18	true
