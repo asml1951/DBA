@@ -20,8 +20,6 @@ CREATE TABLE products
 
 
 
-sql> SELECT * FROM products WHERE 1 = ANY (category)
-[2018-06-20 10:59:43] 5 rows retrieved starting from 1 in 110ms (execution: 48ms, fetching: 62ms)
 
 
 --2. Придумайте еще не менее двух ограничений в других таблицах будущего интернет-магазина и реализуйте их
