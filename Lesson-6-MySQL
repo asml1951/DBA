@@ -1,0 +1,74 @@
+--Lesson 6 MySQL
+         Сдаю 2-ой раз, так как первоначально сделал это задание для Postgres(ошибочка вышла) 
+--Создайте таблицу "История изменений товаров". Как минимум она должна содержать следующие поля: 
+--  ID товара
+--  Поле типа ENUM, которое перечисляет случившееся с товаром событие: создание нового (create), изменение цены (price), удаление товара (delete)
+--  Старая цена (заполняется при событии price)
+--  Новая цена (заполняется при событии price)
+--  Метка даты и времени, когда произошло изменение
+
+sql> CREATE TABLE history
+(
+  product_id INTEGER NOT NULL,
+  event ENUM('create','price_change','delete'),
+  old_price  INTEGER,
+  new_price  INTEGER,
+  date       TIMESTAMP
+)
+[2018-07-03 14:21:03] completed in 340ms
+
+
+
+sql> SELECT * FROM history
+[2018-07-03 14:47:33] 11 rows retrieved starting from 1 in 48ms (execution: 20ms, fetching: 28ms)
+
+1	create          NULL 345    2018-06-01 12:41:35
+1	price_change	345	 349    2018-06-02 12:42:57
+1	price_change	349	 370    2018-06-03 12:44:10
+1	price_change	370	 410    2018-06-04 12:57:57
+2	price_change	500	 600    2018-06-02 12:59:30
+2	price_change	600	 650    2018-06-03 13:00:32
+2	price_change	650	 678    2018-06-04 13:01:31
+3	create          NULL 700    2018-06-06 13:02:29
+4	create          NULL 710    2018-06-18 13:04:21
+5	create          NULL 340    2018-06-19 13:05:07
+2	price_change	678	 800    2018-06-21 09:03:53
+5	delete			NULL NULL   2018-07-02 12:21:18
+
+
+
+-- Создайте представления "Новые товары"
+
+    -- Новые товары - товары, поступившие за последние 3 дня:
+
+sql> CREATE VIEW new_products AS
+ SELECT * FROM history WHERE datediff(NOW(), date) <= 3
+  AND event = 'create'
+[2018-07-03 15:08:11] completed in 41ms
+
+sql> SELECT * from new_products
+[2018-07-03 15:10:12] 3 rows retrieved starting from 1 in 19ms (execution: 8ms, fetching: 11ms)
+
+1	create		345	2018-07-01 12:41:35
+3	create		700	2018-07-01 13:02:29
+4	create		710	2018-06-30 13:04:21
+
+    --Товары, цена которых изменялась не менее 3 раз
+
+ sql> CREATE VIEW price_changed_3_times AS
+  SELECT product_id,COUNT(event) FROM history
+  WHERE event='price_change'
+  GROUP BY product_id
+  HAVING COUNT(event) >= 3
+[2018-07-03 15:13:06] completed in 75ms
+
+sql> SELECT * FROM price_changed_3_times
+[2018-07-03 15:14:09] 2 rows retrieved starting from 1 in 15ms (execution: 7ms, fetching: 8ms)
+
+product_id  COUNT(event)
+1	        3
+2	        4
+
+
+
+
