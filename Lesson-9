@@ -98,25 +98,25 @@ id  name            price   weight size color
 
 sql> SELECT name,properties->>'color' AS color,price,
        (price * quantity) AS total_name_price  ,
-       100*(price * quantity)/ sum(price * quantity)
-          OVER( PARTITION BY properties->>'color') AS percentage
-FROM products
-[2018-07-03 11:43:40] 13 rows retrieved starting from 1 in 16ms (execution: 0ms, fetching: 16ms)
+        CAST(100*(price * quantity)/sum(price * quantity)
+          OVER( PARTITION BY properties->>'color') AS NUMERIC(8,2)) AS percentage
 
-name          color      price     total_name_price  percentage
-Утконосы                 240.00    2400              24.7729149463253509
-Ножницы		          130.00    1690	             17.444260941370768
-Напильник		          311.00    5598	             57.7828241123038811
-Пассатижы  	black	300.00    8400              100
-Отвертка	     green	230.00    9200	             20.6974128233970754
-Электродрель	green	750.00    35250             79.3025871766029246
-Кувалда	     red	     300.00    15000             4.3016919988528821
-Молоток	     red	     200.00    2000	             0.57355893318038428449
-Грабли	     red	     230.00	6900	             1.9787783194723258
-Электроножницы	red	     800.00	15200             4.3590478921709206
-Газонокосилка	red	     1200.00	96000             27.5308287926584457
-Электронасос	red	     8900.00	213600            61.2560940636650416
-Рубанок	     white	480.00	4320              100
+FROM products
+[2018-07-03 13:38:30] 13 rows retrieved starting from 1 in 81ms (execution: 49ms, fetching: 32ms)
+
+Утконосы                240.00	2400   24.77
+Ножницы                 130.00	1690   17.44
+Напильник               311.00	5598   57.78
+Пассатижы       black   300.00	8400   100.00
+Отвертка        green   230.00	9200   20.70
+Электродрель	 green   750.00	35250  79.30
+Кувалда         red     300.00	15000  4.30
+Молоток         red     200.00	2000   0.57
+Грабли          red     230.00	6900   1.98
+Электроножницы  red     800.00	15200  4.36
+Газонокосилка	 red	    1200.00	96000  27.53
+Электронасос    red	    8900.00	213600 61.26
+Рубанок         white   480.00	4320   100.00
 
 
 
