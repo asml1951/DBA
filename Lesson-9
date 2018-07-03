@@ -1,0 +1,168 @@
+--Lesson 9
+
+--1.Создайте в товарах поле типа jsonb для хранения различных характеристик товара. Например цвет (color), размер
+--(size), вес (weight) и так далее, что вам придет в голову. Заполните это поле различными характеристиками в 
+--виде json.
+
+sql> SELECT * FROM public.products
+[2018-07-02 13:49:27] 13 rows retrieved starting from 1 in 63ms (execution: 16ms, fetching: 47ms)
+
+id  category artikul name           price   quantity  is_in_stock  properties
+6	{1,3}	1000005	Электронасос	8900.00	24	true	{"color": "red", "weight": "5"}
+4	{1,3}	1000003	Электродрель	750.00	47	true	{"color": "green", "weight": "2"}
+2	{1,2,4}	1000001	Молоток	200.00	10	true	{"size": "XXL", "color": "red", "weight": "2"}
+17	{2,4}	1000013	Напильник	311.00	18	true	{"size": "", "color": "", "weight": ""}
+7	{2,4}	1000006	Грабли	230.00	30	true	{"color": "red", "weight": "1.5"}
+8	{2,3}	1000007	Электроножницы	800.00	19	true	{"color": "red", "weight": "0.8"}
+14	{1,4}	1000010	Утконосы	240.00	10	true	{"size": "L", "color": "", "weight": ""}
+16	{2,4}	1000012	Рубанок	480.00	9	true	{"size": "XXL", "color": "white", "weight": "0.6"}
+9	{1,4}	1000008	Отвертка	230.00	40	true	{"size": "s", "color": "green", "weight": "0.1"}
+13	{1,4}	1000009	Пассатижы	300.00	28	true	{"color": "black", "weight": ""}
+5	{2,3}	1000004	Газонокосилка	1200.00	80	true	{"color": "red", "weight": "25"}
+15	{2,4}	1000011	Ножницы	130.00	13	true	{"size": "XL", "color": "", "weight": "0.3"}
+3	{1,4}	1000002	Кувалда	300.00	50	true	{"size": "XXL", "color": "red", "weight": "5"}
+
+
+--2. Найдите товары:
+     --2.1 У которых есть характеристика цвет, но нет размера
+
+sql> SELECT * FROM public.products
+WHERE properties->>'color'  <> ''
+AND  properties->>'size' ISNULL
+OR   properties->>'size' = ''
+[2018-07-02 15:29:06] 7 rows retrieved starting from 1 in 31ms (execution: 16ms, fetching: 15ms)
+
+6	{1,3}	1000005	Электронасос	8900.00	24	true	{"color": "red", "weight": "5"}
+4	{1,3}	1000003	Электродрель	750.00	47	true	{"color": "green", "weight": "2"}
+17	{2,4}	1000013	Напильник	311.00	18	true	{"size": "", "color": "", "weight": ""}
+7	{2,4}	1000006	Грабли	230.00	30	true	{"color": "red", "weight": "1.5"}
+8	{2,3}	1000007	Электроножницы	800.00	19	true	{"color": "red", "weight": "0.8"}
+13	{1,4}	1000009	Пассатижы	300.00	28	true	{"color": "black", "weight": ""}
+5	{2,3}	1000004	Газонокосилка	1200.00	80	true	{"color": "red", "weight": "25"}
+
+
+     --2.2 У которых вес не более килограмма
+
+sql> SELECT * FROM public.products
+WHERE properties->>'weight'  <= '1'
+AND   properties->>'weight' <> ''
+[2018-07-02 15:17:35] 4 rows retrieved starting from 1 in 31ms (execution: 16ms, fetching: 15ms)
+
+8	{2,3}	1000007	Электроножницы	800.00	19	true	{"color": "red", "weight": "0.8"}
+16	{2,4}	1000012	Рубанок	480.00	9	true	{"size": "XXL", "color": "white", "weight": "0.6"}
+9	{1,4}	1000008	Отвертка	230.00	40	true	{"size": "s", "color": "green", "weight": "0.1"}
+15	{2,4}	1000011	Ножницы	130.00	13	true	{"size": "XL", "color": "", "weight": "0.3"}
+
+
+
+      --2.3 Красного цвета и размера XXL
+
+sql> SELECT * FROM public.products
+WHERE properties->>'color' = 'red'
+AND properties->>'size' = 'XXL'
+
+2	{1,2,4}	1000001	Молоток	200.00	10	true	{"size": "XXL", "color": "red", "weight": "2"}
+3	{1,4}	1000002	Кувалда	300.00	50	true	{"size": "XXL", "color": "red", "weight": "5"}
+
+
+--3. Создайте материализированное представление, которое поля jsonb превратит в столбцы (color, size, weight)
+
+sql> CREATE MATERIALIZED VIEW products_properties AS
+   SELECT id,name, price,properties->>'weight' AS weight,
+         properties->>'size' AS size, properties->>'color' AS color
+      FROM products
+[2018-07-02 15:43:03] 13 rows affected in 425ms
+
+sql> SELECT * FROM products_properties
+[2018-07-02 15:44:48] 13 rows retrieved starting from 1 in 49ms (execution: 28ms, fetching: 21ms)
+
+id  name            price   weight size color
+6	Электронасос	8900.00	5		    red
+4	Электродрель	750.00	2		    green
+2	Молоток	        200.00	2	   XXL  red
+17	Напильник	    311.00			
+7	Грабли	        230.00	1.5		    red
+8	Электроножницы	800.00	0.8		    red
+14	Утконосы	    240.00		   L	
+16	Рубанок	        480.00	0.6    XXL	white
+9	Отвертка	    230.00	0.1	   s	green
+13	Пассатижы	    300.00			    black
+5	Газонокосилка	1200.00	25		    red
+15	Ножницы	        130.00	0.3	   XL	
+3	Кувалда	        300.00	5	   XXL	red
+
+
+
+
+
+
+
+
+
+
+--5. Изучаем рекурсию:
+     --Создаем таблицу категорий и подкатегорий и наполняем данными:
+CREATE TABLE product_cats (
+  id  INT NOT NULL ,
+  parent_id INT,
+  name VARCHAR(50)
+);
+
+
+SELECT * FROM product_cats;
+
+id  parent_id  name
+1		null       Все товары
+2	  1	         Автотовары
+3	  1	         Электротовары
+4	  1        	 Мебель
+5	  2	         Шины
+6	  2	         Кузовные детали
+7	  2	         Автоэлектрика
+8	  2	         Масла
+9	  3	         Электроплиты
+10	3          Холодильники
+11	3        	 Пылесосы
+12	4	         Стиральные машины
+13	5	         Шины Nokia
+14	5	         Шины Michelin
+15	6	         Кузовные Mercedes
+16	6	         Кузовные Reno
+17	6	         Кузовные Mazda
+
+
+WITH RECURSIVE r AS (
+  SELECT  parent_id,id, name
+  FROM product_cats
+  WHERE parent_id = 1
+
+  UNION
+
+  SELECT  product_cats.parent_id, product_cats.id, product_cats.name
+  FROM product_cats
+    JOIN r
+      ON product_cats.parent_id = r.id
+)
+
+SELECT * FROM r;
+
+parent_id id  name
+1	        2	  Автотовары
+1	        3	  Электротовары
+1	        4   Мебель
+2	        5	  Шины
+2	        6	  Кузовные детали
+2	        7	  Автоэлектрика
+2       	8	  Масла
+3	        9	  Электроплиты
+3	        10	Холодильники
+3	        11	Пылесосы
+4	        12	Стиральные машины
+5	        13	Шины Nokia
+5	        14	Шины Michelin
+6	        15	Кузовные Mercedes
+6	        16	Кузовные Reno
+6	        17	Кузовные Mazda
+
+
+
